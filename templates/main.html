@@ -1,17 +1,120 @@
 <html>
+
 <head>
-<style type="text/css">
-textarea
-{
-width: 100%
-}
-</style>
+    <script src="//cdn.bootcss.com/jquery/3.1.0/jquery.min.js"></script>
+
+    <style type="text/css">
+        #contentBox {
+            width: 100%;
+            height: 90%;
+            overflow-y:auto;
+        }
+
+        #sendBox {
+            width: 100%;
+            height: 10%
+        }
+
+        #inputContent {
+            width: 90%;
+            height: 100%;
+            float: left;
+        }
+
+        #commitBtn {
+            width: 10%;
+            height: 100%;
+            float: left;
+        }
+    </style>
 </head>
 
 <body>
-<textarea>
-</textarea>
+    <div id="contentBox"></div>
+    <div id="sendBox">
+        <input id="inputContent" type="text" />
+        <input id="commitBtn" type="submit" value="Submit" />
+    </div>
 
+    <script type="text/javascript">
+        var wsServer = 'ws://' + window.location.host + '/websocket';
+        var websocket = new WebSocket(wsServer);
+
+        $('#inputContent').keypress(function(e) {
+            // 回车键事件
+            if (e.which == 13) {
+                jQuery("#commitBtn").click();
+                $('#inputContent').val('');
+            }
+        });
+        websocket.onmessage = function(msg) {
+            $('#contentBox').append('<div>' + msg.data + '</div>')
+            $('#contentBox').animate({scrollTop:$('contentBox').height()}, 1000);
+        };
+
+        $('#commitBtn').click(function() {
+            websocket.send($('#inputContent').val())
+
+        });
+        $(function() {
+            //阻止浏览器默认行。
+            $(document).on({
+                dragleave: function(e) { //拖离
+                    e.preventDefault();
+                },
+                drop: function(e) { //拖后放
+                    e.preventDefault();
+                },
+                dragenter: function(e) { //拖进
+                    e.preventDefault();
+                },
+                dragover: function(e) { //拖来拖去
+                    e.preventDefault();
+                }
+            });
+
+
+
+            var box = document.getElementById('inputContent'); //拖拽区域
+            box.addEventListener("drop", function(e) {
+                e.preventDefault(); //取消默认浏览器拖拽效果
+                var fileList = e.dataTransfer.files; //获取文件对象
+                //检测是否是拖拽文件到页面的操作
+                if (fileList.length == 0) {
+                    return false;
+                }
+                //检测文件是不是图片
+                if (fileList[0].type.indexOf('image') === -1) {
+                    alert("您拖的不是图片！");
+                    return false;
+                }
+
+                //拖拉图片到浏览器，可以实现预览功能
+                var img = window.URL.createObjectURL(fileList[0]);
+                var filename = fileList[0].name; //图片名称
+                var filesize = Math.floor((fileList[0].size) / 1024);
+                if (filesize > 500) {
+                    alert("上传大小不能超过500K.");
+                    return false;
+                }
+
+                //上传
+                xhr = new XMLHttpRequest();
+                xhr.open("post", "upload", true);
+                xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+                var fd = new FormData();
+                fd.append('uploadFile', fileList[0]);
+
+                xhr.send(fd);
+
+                if (filename.indexOf("jpg") != -1 || filename.indexOf("png") != -1) {
+                    var str = "<img src='/templates/" + filename + "'><p>图片名称：" + filename + "</p><p>大小：" + filesize + "KB</p>";
+                    $("#contentBox").html(str);
+                }
+            }, false);
+        });
+    </script>
 </body>
 
 </html>
