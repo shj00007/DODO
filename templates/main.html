@@ -109,8 +109,8 @@
                 xhr.send(fd);
 
                 if (filename.indexOf("jpg") != -1 || filename.indexOf("png") != -1) {
-                    var str = "<img src='/templates/" + filename + "'><p>图片名称：" + filename + "</p><p>大小：" + filesize + "KB</p>";
-                    $("#contentBox").html(str);
+                    var str = "<img src='/tempfiles/" + filename + "'><p>图片名称：" + filename + "</p><p>大小：" + filesize + "KB</p>";
+                    $("#contentBox").append(str);
                 }
             }, false);
         });
