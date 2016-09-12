@@ -49,7 +49,7 @@
         });
         websocket.onmessage = function(msg) {
             $('#contentBox').append('<div>' + msg.data + '</div>')
-            $('#contentBox').animate({scrollTop:$('contentBox').height()}, 1000);
+            $('#contentBox').animate({scrollTop:$('#contentBox')[0].scrollHeight}, 0);
         };
 
         $('#commitBtn').click(function() {
